@@ -20,11 +20,11 @@ import {
   Check,
   PhoneCall
 } from "lucide-react";
-import { api } from "../../../lib/api";
-import { Evaluation } from "../../../lib/types";
-import { formatDate, getScoreBadgeColor } from "../../../lib/utils";
-import ScoreMeters from "../../../components/ScoreMeters";
-import AudioPlayer from "../../../components/AudioPlayer";
+import { api } from "@/lib/api";
+import { Evaluation } from "@/lib/types";
+import { formatDate, getScoreBadgeColor } from "@/lib/utils";
+import ScoreMeters from "@/components/ScoreMeters";
+import AudioPlayer from "@/components/AudioPlayer";
 
 export default function EvaluationPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);

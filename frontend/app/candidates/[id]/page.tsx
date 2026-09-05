@@ -16,10 +16,10 @@ import {
   Play,
   CheckCircle2
 } from "lucide-react";
-import { api } from "../../../lib/api";
-import { Candidate, Interview, Job } from "../../../lib/types";
-import { formatDate, formatDuration, getStatusBadgeColor, getScoreBadgeColor } from "../../../lib/utils";
-import VoiceScreeningModal from "../../../components/VoiceScreeningModal";
+import { api } from "@/lib/api";
+import { Candidate, Interview, Job } from "@/lib/types";
+import { formatDate, formatDuration, getStatusBadgeColor, getScoreBadgeColor } from "@/lib/utils";
+import VoiceScreeningModal from "@/components/VoiceScreeningModal";
 
 export default function CandidateDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);

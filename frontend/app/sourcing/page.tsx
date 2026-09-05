@@ -27,8 +27,8 @@ import {
   ShieldCheck,
   Plus
 } from "lucide-react";
-import { api } from "../../lib/api";
-import { Job, SourcedCandidate, SourcingProviderInfo, PeopleSearchResponse } from "../../lib/types";
+import { api } from "@/lib/api";
+import { Job, SourcedCandidate, SourcingProviderInfo, PeopleSearchResponse } from "@/lib/types";
 
 export default function PeopleSearchSourcingPage() {
   const router = useRouter();

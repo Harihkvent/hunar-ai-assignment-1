@@ -2,8 +2,8 @@
 
 import React from "react";
 import { CheckCircle, AlertTriangle, Award, ShieldAlert, Sparkles, TrendingUp } from "lucide-react";
-import { Evaluation } from "../lib/types";
-import { getScoreBadgeColor } from "../lib/utils";
+import { Evaluation } from "@/lib/types";
+import { getScoreBadgeColor } from "@/lib/utils";
 
 interface ScoreMetersProps {
   evaluation: Evaluation;

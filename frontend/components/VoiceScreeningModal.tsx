@@ -14,8 +14,8 @@ import {
   Radio,
   Loader2
 } from "lucide-react";
-import { api } from "../lib/api";
-import { Candidate, Job } from "../lib/types";
+import { api } from "@/lib/api";
+import { Candidate, Job } from "@/lib/types";
 
 interface VoiceScreeningModalProps {
   candidate: Candidate;

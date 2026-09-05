@@ -16,9 +16,9 @@ import {
   Trash2,
   RefreshCw
 } from "lucide-react";
-import { api } from "../../lib/api";
-import { Job } from "../../lib/types";
-import { formatDate, getStatusBadgeColor } from "../../lib/utils";
+import { api } from "@/lib/api";
+import { Job } from "@/lib/types";
+import { formatDate, getStatusBadgeColor } from "@/lib/utils";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);

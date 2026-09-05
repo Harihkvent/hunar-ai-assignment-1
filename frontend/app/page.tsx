@@ -19,10 +19,10 @@ import {
   MessageSquare,
   UserSearch
 } from "lucide-react";
-import { api } from "../lib/api";
-import { DashboardStats, Job } from "../lib/types";
-import { formatDate, formatDuration, getScoreBadgeColor, getStatusBadgeColor } from "../lib/utils";
-import QuickScreeningAnswersModal from "../components/QuickScreeningAnswersModal";
+import { api } from "@/lib/api";
+import { DashboardStats, Job } from "@/lib/types";
+import { formatDate, formatDuration, getScoreBadgeColor, getStatusBadgeColor } from "@/lib/utils";
+import QuickScreeningAnswersModal from "@/components/QuickScreeningAnswersModal";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
