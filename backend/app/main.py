@@ -80,7 +80,6 @@ app.include_router(system.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
-@app.get("/api/index.py")
 def root():
     return {
         "name": settings.PROJECT_NAME,
