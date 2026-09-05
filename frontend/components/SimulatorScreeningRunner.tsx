@@ -15,8 +15,8 @@ import {
   User,
   Loader2
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Interview, Job, Candidate } from "@/lib/types";
+import { api } from "../lib/api";
+import { Interview, Job, Candidate } from "../lib/types";
 
 interface SimulatorScreeningRunnerProps {
   interview: Interview;

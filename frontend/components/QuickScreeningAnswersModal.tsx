@@ -16,9 +16,9 @@ import {
   Bot,
   AlertTriangle
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Evaluation, Interview } from "@/lib/types";
-import { formatDate, formatDuration, getScoreBadgeColor, getStatusBadgeColor } from "@/lib/utils";
+import { api } from "../lib/api";
+import { Evaluation, Interview } from "../lib/types";
+import { formatDate, formatDuration, getScoreBadgeColor, getStatusBadgeColor } from "../lib/utils";
 import AudioPlayer from "./AudioPlayer";
 
 interface QuickScreeningAnswersModalProps {

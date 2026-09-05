@@ -14,11 +14,11 @@ import {
   MessageSquare,
   UserSearch
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Candidate, Job } from "@/lib/types";
-import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "@/lib/utils";
-import VoiceScreeningModal from "@/components/VoiceScreeningModal";
-import QuickScreeningAnswersModal from "@/components/QuickScreeningAnswersModal";
+import { api } from "../../lib/api";
+import { Candidate, Job } from "../../lib/types";
+import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "../../lib/utils";
+import VoiceScreeningModal from "../../components/VoiceScreeningModal";
+import QuickScreeningAnswersModal from "../../components/QuickScreeningAnswersModal";
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);

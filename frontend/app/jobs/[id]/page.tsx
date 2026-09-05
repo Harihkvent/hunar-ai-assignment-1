@@ -19,11 +19,11 @@ import {
   MessageSquare,
   UserSearch
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Job, Candidate } from "@/lib/types";
-import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "@/lib/utils";
-import VoiceScreeningModal from "@/components/VoiceScreeningModal";
-import QuickScreeningAnswersModal from "@/components/QuickScreeningAnswersModal";
+import { api } from "../../../lib/api";
+import { Job, Candidate } from "../../../lib/types";
+import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "../../../lib/utils";
+import VoiceScreeningModal from "../../../components/VoiceScreeningModal";
+import QuickScreeningAnswersModal from "../../../components/QuickScreeningAnswersModal";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);

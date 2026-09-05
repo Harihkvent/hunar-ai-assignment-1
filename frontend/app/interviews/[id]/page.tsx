@@ -19,11 +19,11 @@ import {
   ExternalLink,
   Volume2
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Interview, Job, Candidate } from "@/lib/types";
-import { formatDate, formatDuration, getStatusBadgeColor } from "@/lib/utils";
-import AudioPlayer from "@/components/AudioPlayer";
-import SimulatorScreeningRunner from "@/components/SimulatorScreeningRunner";
+import { api } from "../../../lib/api";
+import { Interview, Job, Candidate } from "../../../lib/types";
+import { formatDate, formatDuration, getStatusBadgeColor } from "../../../lib/utils";
+import AudioPlayer from "../../../components/AudioPlayer";
+import SimulatorScreeningRunner from "../../../components/SimulatorScreeningRunner";
 
 export default function InterviewConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);

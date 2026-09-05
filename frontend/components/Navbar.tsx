@@ -15,8 +15,8 @@ import {
   Radio,
   UserSearch
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { SystemHealth } from "@/lib/types";
+import { api } from "../lib/api";
+import { SystemHealth } from "../lib/types";
 
 export default function Navbar() {
   const pathname = usePathname();

@@ -14,8 +14,8 @@ import {
   Lock,
   Server
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { SystemHealth } from "@/lib/types";
+import { api } from "../../lib/api";
+import { SystemHealth } from "../../lib/types";
 
 export default function SettingsPage() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
