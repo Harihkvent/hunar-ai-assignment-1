@@ -60,17 +60,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# ASGI Middleware to handle Vercel serverless rewrites and preserve original request path
-@app.middleware("http")
-async def vercel_rewrite_path_middleware(request, call_next):
-    # Vercel passes the original URL in x-matched-path or x-forwarded-uri
-    matched_path = request.headers.get("x-matched-path")
-    if matched_path and matched_path != "/api/index.py" and request.scope.get("path") == "/api/index.py":
-        request.scope["path"] = matched_path
-        request.scope["raw_path"] = matched_path.encode("utf-8")
-    response = await call_next(request)
-    return response
-
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
