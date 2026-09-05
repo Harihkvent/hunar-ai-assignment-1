@@ -4,29 +4,29 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 1. 📊 Executive Recruiter Dashboard
+### 1. Executive Recruiter Dashboard
 - **Real-Time Pipeline KPIs**: Active job positions, total candidates screened, completed voice interviews, shortlist conversion rates, and organization-wide average scores.
 - **Recent Voice Screenings Feed**: Live call status tracking (`INITIATED`, `RINGING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`), duration meters, and one-click scorecard navigation.
 - **Active Job Pipeline Snapshot**: Instant candidate counts and stage distributions per job role.
 
-### 2. 💼 Dynamic Job Position & Voice Agent Builder
+### 2. Dynamic Job Position & Voice Agent Builder
 - **Role Configuration**: Job title, department, location/work model, experience range, core required skills, and preferred skill tags.
 - **Automated Hunar Voice Agent Sync**: Dynamically generates tailored conversational prompts, screening objectives, and structured result schemas on the **Hunar.AI External API** (`https://api.voice.hunar.ai/external/v1/`).
 - **Voice Persona Selection**: Choose from 6 professional voice models (`NEHA`, `ROY`, `ZOE`, `SAM`, `MIRA`, `EESHA`), custom persona display names (e.g. `Aria`), and 10+ supported languages (English, Hindi, Tamil, Telugu, Kannada, Marathi, Malayalam, Gujarati, Bengali, Spanish).
 
-### 3. 👥 Candidate Management Pipeline
+### 3. Candidate Management Pipeline
 - **Candidate Directory**: Search and filter applicants by applied job, experience, status, or keyword.
 - **Job Attachment**: Attach candidates to jobs with contact details in E.164 phone format and resume notes.
 - **One-Click Voice Screening**: Trigger outbound phone calls or interactive web simulator sessions with a single click.
 
-### 4. 📞 Real-Time AI Voice Screening Console
+### 4. Real-Time AI Voice Screening Console
 - **Live Outbound Phone Calls**: Dispatches actual telephony calls to candidate numbers via Hunar Voice API with customizable organization caller IDs.
 - **Interactive Web Simulator Mode**: Full in-browser voice screening session featuring speech synthesis, real-time question stepper, and automated transcript generation for testing.
 - **Live Telephony Monitor**: Status indicators, call elapsed timer, candidate speech duration metrics, and telephony provider event logs.
 
-### 5. 🎯 Structured Candidate Evaluation Scorecards
+### 5. Structured Candidate Evaluation Scorecards
 - **Multi-Dimensional Scoring**: Evaluates candidates across **Technical Competence**, **Communication & Clarity**, **Problem Solving**, and **Experience Match** (0–100 scale).
 - **AI Recommendation Engine**: Categorizes candidates into `STRONG_HIRE`, `SHORTLIST`, `NEEDS_REVIEW`, or `REJECT`.
 - **Itemized Question Breakdown**: Stores each screening question, candidate response, individual score (1–10), and contextual evaluation feedback.
@@ -34,14 +34,14 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 - **Integrated Audio Player**: Audio recording playback with waveform visualizer, seek bar, time tracking, and playback speed multiplier (1x, 1.25x, 1.5x, 2x).
 - **Recruiter Decision Workflow**: Recruiter decision buttons (`Shortlist for Round 2`, `Flag for Review`, `Reject`) with reviewer notes and interactive celebration effects.
 
-### 6. 🛡️ Security, Webhooks & System Diagnostics
+### 6. Security, Webhooks & System Diagnostics
 - **Strict Credential Isolation**: The Hunar API key is stored exclusively on the Python backend trust boundary and is never exposed to the client browser.
 - **Signed Webhook Receiver**: Endpoint at `/api/webhooks/hunar` verifies `X-Hunar-Signature` and `X-Hunar-Timestamp` using HMAC-SHA256 digests.
 - **Integration Health Monitor**: Live check of Hunar API authentication, agent provisioning counts, and organization caller ID phone numbers with allowed country destinations.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+##  Architecture & Tech Stack
 
 ```text
 ┌────────────────────────────────────────────────────────┐
@@ -80,7 +80,7 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 
 ---
 
-## ⚙️ Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 - Python 3.10+ (tested on Python 3.12)
@@ -163,7 +163,7 @@ The web application will be accessible at: `http://localhost:3000`
 
 ---
 
-## 🧪 Automated Testing
+## Automated Testing
 
 To run the complete automated test suite verifying health check, job creation, candidate attachment, voice screening session, scorecard evaluation, and HMAC webhook signature validation:
 
@@ -190,7 +190,7 @@ ALL TESTS PASSED SUCCESSFULLY (7/7) [OK]
 
 ---
 
-## 🚢 Deployment Guide
+## Deployment Guide
 
 ### Option A: Frontend on Vercel
 1. Import the repository on [Vercel](https://vercel.com/).
@@ -212,7 +212,7 @@ ALL TESTS PASSED SUCCESSFULLY (7/7) [OK]
 
 ---
 
-## 🔒 Security Summary
+## Security Summary
 
 1. **No API Key on Client**: The frontend communicates only with the local FastAPI endpoints. All external Hunar calls are authenticated server-side.
 2. **Repository Cleanliness**: `.env` and SQLite files are strictly listed in `.gitignore`.
@@ -221,5 +221,5 @@ ALL TESTS PASSED SUCCESSFULLY (7/7) [OK]
 
 ---
 
-## 📄 License
+## License
 MIT License. Built for Hunar.AI Assignment 1.
