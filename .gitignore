@@ -23,10 +23,9 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
-lib/
-lib64/
-parts/
+# Unignore frontend code libraries
+!frontend/lib/
+!frontend/lib/**
 sdist/
 var/
 wheels/
