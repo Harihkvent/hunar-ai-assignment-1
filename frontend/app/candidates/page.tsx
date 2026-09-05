@@ -10,12 +10,15 @@ import {
   FileText,
   Briefcase,
   ChevronRight,
-  Plus
+  Plus,
+  MessageSquare,
+  UserSearch
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Candidate, Job } from "@/lib/types";
 import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "@/lib/utils";
 import VoiceScreeningModal from "@/components/VoiceScreeningModal";
+import QuickScreeningAnswersModal from "@/components/QuickScreeningAnswersModal";
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -24,6 +27,7 @@ export default function CandidatesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [jobFilter, setJobFilter] = useState<string>("ALL");
   const [screeningCandidate, setScreeningCandidate] = useState<Candidate | null>(null);
+  const [previewInterviewId, setPreviewInterviewId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = () => {
@@ -180,13 +184,25 @@ export default function CandidatesPage() {
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {cand.latest_interview_id && (
-                          <Link
-                            href={`/evaluations/${cand.latest_interview_id}`}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-400 hover:bg-indigo-500/15 border border-indigo-500/20 transition-colors"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>Scorecard</span>
-                          </Link>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewInterviewId(cand.latest_interview_id || null)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:bg-cyan-500/15 border border-cyan-500/30 transition-colors"
+                              title="View conversation responses & answers"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>Responses</span>
+                            </button>
+
+                            <Link
+                              href={`/evaluations/${cand.latest_interview_id}`}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-400 hover:bg-indigo-500/15 border border-indigo-500/20 transition-colors"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>Scorecard</span>
+                            </Link>
+                          </>
                         )}
                         <button
                           onClick={() => setScreeningCandidate(cand)}
@@ -208,6 +224,13 @@ export default function CandidatesPage() {
           </div>
         )}
       </div>
+
+      {/* Quick Screening Answers Modal */}
+      <QuickScreeningAnswersModal
+        interviewId={previewInterviewId}
+        isOpen={Boolean(previewInterviewId)}
+        onClose={() => setPreviewInterviewId(null)}
+      />
 
       {/* Voice Screening Modal */}
       {screeningCandidate && (

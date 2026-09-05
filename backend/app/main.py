@@ -18,12 +18,12 @@ try:
     from app.core.config import settings
     from app.core.database import engine, Base, SessionLocal
     from app.services.seed_data import seed_database
-    from app.api import jobs, candidates, interviews, evaluations, system, webhooks
+    from app.api import jobs, candidates, interviews, evaluations, system, webhooks, sourcing
 except ImportError:
     from backend.app.core.config import settings
     from backend.app.core.database import engine, Base, SessionLocal
     from backend.app.services.seed_data import seed_database
-    from backend.app.api import jobs, candidates, interviews, evaluations, system, webhooks
+    from backend.app.api import jobs, candidates, interviews, evaluations, system, webhooks, sourcing
 
 # Configure logging
 logging.basicConfig(
@@ -72,6 +72,7 @@ app.include_router(candidates.router, prefix=settings.API_V1_STR)
 app.include_router(interviews.router, prefix=settings.API_V1_STR)
 app.include_router(evaluations.router, prefix=settings.API_V1_STR)
 app.include_router(webhooks.router, prefix=settings.API_V1_STR)
+app.include_router(sourcing.router, prefix=settings.API_V1_STR)
 app.include_router(system.router, prefix=settings.API_V1_STR)
 
 

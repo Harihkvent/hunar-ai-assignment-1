@@ -12,7 +12,8 @@ import {
   Settings as SettingsIcon,
   Activity,
   PlusCircle,
-  Radio
+  Radio,
+  UserSearch
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { SystemHealth } from "@/lib/types";
@@ -30,9 +31,10 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/jobs", label: "Jobs", icon: Briefcase },
+    { href: "/sourcing", label: "People Search", icon: UserSearch },
     { href: "/candidates", label: "Candidates", icon: Users },
     { href: "/interviews", label: "Screening Console", icon: PhoneCall },
-    { href: "/settings", label: "Settings & Health", icon: SettingsIcon },
+    { href: "/settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (

@@ -1,7 +1,15 @@
 # Environment and secrets
 .env
+.env.*
 .env*.local
 *.env
+backend/.env*
+frontend/.env*
+frontend/.env*.local
+backend/.env*.local
+!.env.example
+!frontend/.env.example
+!backend/.env.example
 
 # Python
 __pycache__/

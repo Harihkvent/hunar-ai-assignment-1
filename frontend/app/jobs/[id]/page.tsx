@@ -15,12 +15,15 @@ import {
   Clock,
   ShieldCheck,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  UserSearch
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Job, Candidate } from "@/lib/types";
 import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "@/lib/utils";
 import VoiceScreeningModal from "@/components/VoiceScreeningModal";
+import QuickScreeningAnswersModal from "@/components/QuickScreeningAnswersModal";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -30,6 +33,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [previewInterviewId, setPreviewInterviewId] = useState<string | null>(null);
 
   // Modal states
   const [isAddCandidateOpen, setIsAddCandidateOpen] = useState(false);
@@ -347,13 +351,25 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {cand.latest_interview_id && (
-                            <Link
-                              href={`/evaluations/${cand.latest_interview_id}`}
-                              className="p-2 rounded-lg text-indigo-400 hover:bg-indigo-500/15 transition-colors"
-                              title="View Scorecard"
-                            >
-                              <FileText className="w-4 h-4" />
-                            </Link>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewInterviewId(cand.latest_interview_id || null)}
+                                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:bg-cyan-500/15 border border-cyan-500/30 transition-colors flex items-center gap-1"
+                                title="View conversation responses & itemized answers"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>Responses</span>
+                              </button>
+
+                              <Link
+                                href={`/evaluations/${cand.latest_interview_id}`}
+                                className="p-2 rounded-lg text-indigo-400 hover:bg-indigo-500/15 transition-colors"
+                                title="View Scorecard"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </Link>
+                            </>
                           )}
                           <button
                             onClick={() => setScreeningCandidate(cand)}
@@ -476,6 +492,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
         </div>
       )}
+
+      {/* Quick Screening Answers Modal */}
+      <QuickScreeningAnswersModal
+        interviewId={previewInterviewId}
+        isOpen={Boolean(previewInterviewId)}
+        onClose={() => setPreviewInterviewId(null)}
+      />
 
       {/* Voice Screening Launcher Modal */}
       {screeningCandidate && (

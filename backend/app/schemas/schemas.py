@@ -199,3 +199,59 @@ class SystemHealthResponse(BaseModel):
     active_api_key_set: bool
     allowed_countries: List[str]
     timestamp: datetime
+
+
+# --- Sourcing / People Search Schemas ---
+class PeopleSearchRequest(BaseModel):
+    job_id: Optional[str] = None
+    job_description: Optional[str] = None
+    title: Optional[str] = None
+    skills: Optional[List[str]] = Field(default_factory=list)
+    experience_min: Optional[float] = 1.0
+    experience_max: Optional[float] = 10.0
+    location: Optional[str] = "India / Remote"
+    provider: Optional[str] = "APOLLO"  # "APOLLO", "PDL", "PROXYCURL", "CORESIGNAL"
+    limit: Optional[int] = 8
+
+
+class SourcedCandidate(BaseModel):
+    id: str
+    name: str
+    current_title: str
+    current_company: str
+    experience_years: float
+    skills: List[str]
+    location: str
+    email: str
+    phone: str
+    linkedin_url: Optional[str] = None
+    match_score: int
+    match_reasons: List[str] = Field(default_factory=list)
+    provider: str
+    headline: Optional[str] = None
+
+
+class PeopleSearchResponse(BaseModel):
+    provider: str
+    total_found: int
+    results: List[SourcedCandidate]
+    extracted_criteria: Dict[str, Any]
+    is_live_api: bool
+    provider_note: str
+
+
+class ImportSourcedCandidateRequest(BaseModel):
+    job_id: str
+    candidate: SourcedCandidate
+    launch_voice_reachout: Optional[bool] = False
+    reachout_mode: Optional[str] = "PHONE"  # "PHONE" or "SIMULATOR"
+
+
+class SourcingProviderInfo(BaseModel):
+    id: str
+    name: str
+    has_api_key: bool
+    description: str
+    website: str
+    supported_filters: List[str]
+

@@ -132,7 +132,7 @@ def run_tests():
     print(f"  [OK] Recruiter Status Updated to: {updated_eval['recruiter_status']}")
 
     # 7. Webhook HMAC-SHA256 Signature Verification
-    print("\n[7/7] Testing Webhook Signature Verification...")
+    print("\n[7/9] Testing Webhook Signature Verification...")
     webhook_body = json.dumps({
         "event_type": "call_summary",
         "call_id": "hunar-test-call-999",
@@ -157,8 +157,40 @@ def run_tests():
     assert hook_res.status_code == 200, f"Webhook failed: {hook_res.text}"
     print(f"  [OK] Webhook verified and processed: {hook_res.json()}")
 
+    # 8. Sourcing & People Search API
+    print("\n[8/9] Testing People Search & Sourcing Engine (Apollo/PDL/Proxycurl/Coresignal)...")
+    providers_res = client.get("/api/sourcing/providers")
+    assert providers_res.status_code == 200, f"Providers failed: {providers_res.text}"
+    providers = providers_res.json()
+    assert len(providers) == 4, f"Expected 4 providers, got {len(providers)}"
+    print(f"  [OK] Sourcing Providers available: {[p['id'] for p in providers]}")
+
+    search_res = client.post("/api/sourcing/search", json={
+        "job_id": job_id,
+        "provider": "APOLLO",
+        "limit": 4
+    })
+    assert search_res.status_code == 200, f"Search failed: {search_res.text}"
+    search_data = search_res.json()
+    assert len(search_data["results"]) > 0, "No candidates found"
+    top_cand = search_data["results"][0]
+    print(f"  [OK] Sourced {len(search_data['results'])} candidates. Top candidate: {top_cand['name']} ({top_cand['match_score']}% Match)")
+
+    # 9. 1-Click Import & Reachout
+    print("\n[9/9] Testing 1-Click Import & Voice AI Reachout...")
+    import_res = client.post("/api/sourcing/import-and-reachout", json={
+        "job_id": job_id,
+        "candidate": top_cand,
+        "launch_voice_reachout": True,
+        "reachout_mode": "SIMULATOR"
+    })
+    assert import_res.status_code == 201, f"Import failed: {import_res.text}"
+    import_data = import_res.json()
+    assert import_data["success"] is True
+    print(f"  [OK] Imported candidate: {import_data['candidate_name']}, Reachout Status: {import_data['call_status']}")
+
     print("\n========================================")
-    print("ALL TESTS PASSED SUCCESSFULLY (7/7) [OK]")
+    print("ALL TESTS PASSED SUCCESSFULLY (9/9) [OK]")
     print("========================================")
 
 if __name__ == "__main__":

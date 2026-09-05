@@ -15,16 +15,20 @@ import {
   ChevronRight,
   Play,
   FileText,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  UserSearch
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { DashboardStats, Job } from "@/lib/types";
 import { formatDate, formatDuration, getScoreBadgeColor, getStatusBadgeColor } from "@/lib/utils";
+import QuickScreeningAnswersModal from "@/components/QuickScreeningAnswersModal";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [previewInterviewId, setPreviewInterviewId] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([api.getDashboardStats(), api.getJobs()])
@@ -194,13 +198,24 @@ export default function DashboardPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2.5">
-                      <div className="text-right hidden sm:block">
+                    <div className="flex items-center gap-2">
+                      <div className="text-right hidden sm:block mr-1">
                         <span className="text-xs font-mono text-slate-300 block">
                           {formatDuration(intItem.duration_seconds)}
                         </span>
                         <span className="text-[10px] text-slate-400">Duration</span>
                       </div>
+
+                      {/* Instant Answers & Telemetry Preview */}
+                      <button
+                        type="button"
+                        onClick={() => setPreviewInterviewId(intItem.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors"
+                        title="View extracted conversation responses & itemized answers"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                        <span className="hidden sm:inline">Responses</span>
+                      </button>
 
                       {intItem.has_evaluation ? (
                         <Link
@@ -208,7 +223,7 @@ export default function DashboardPage() {
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 hover:bg-indigo-500/25 transition-colors"
                         >
                           <FileText className="w-3.5 h-3.5" />
-                          <span>View Scorecard</span>
+                          <span>Scorecard</span>
                         </Link>
                       ) : (
                         <Link
@@ -280,6 +295,13 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Quick Screening Answers & Telemetry Modal */}
+      <QuickScreeningAnswersModal
+        interviewId={previewInterviewId}
+        isOpen={Boolean(previewInterviewId)}
+        onClose={() => setPreviewInterviewId(null)}
+      />
     </div>
   );
 }
