@@ -18,10 +18,10 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*", "frontend/*", "./frontend/*"]
+      "@/*": ["./*"]
     }
+
   },
   "include": [
     "next-env.d.ts",
