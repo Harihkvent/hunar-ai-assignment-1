@@ -37,17 +37,20 @@ logger = logging.getLogger("hunar_ai_app")
 async def lifespan(app: FastAPI):
     # Startup: Create tables and seed initial demo data
     logger.info("Initializing database tables...")
-    Base.metadata.create_all(bind=engine)
-
-    db = SessionLocal()
     try:
-        seed_database(db)
-    finally:
-        db.close()
-    logger.info("Application startup complete.")
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            seed_database(db)
+        finally:
+            db.close()
+        logger.info("Application startup & database initialization complete.")
+    except Exception as e:
+        logger.warning(f"Database initialization deferred or encountered warning: {e}")
     yield
     # Shutdown
     logger.info("Application shutting down.")
+
 
 
 app = FastAPI(
