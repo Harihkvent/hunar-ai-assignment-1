@@ -12,9 +12,15 @@ def get_normalized_database_url(raw_url: str) -> str:
     """
     Normalizes PostgreSQL and SQLite URLs for serverless & cloud deployment.
     - Converts postgres:// to postgresql+pg8000:// (or postgresql://)
-    - If pure-Python pg8000 is installed, defaults to postgresql+pg8000://
+    - If running on Vercel with SQLite, routes to writable /tmp
     """
+    is_serverless = bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+    
     if not raw_url:
+        return "sqlite:////tmp/hiring_assistant.db" if is_serverless else "sqlite:///./hiring_assistant.db"
+
+    # If running on serverless Vercel and using relative SQLite, redirect to writable /tmp
+    if is_serverless and "sqlite" in raw_url and "/tmp" not in raw_url:
         return "sqlite:////tmp/hiring_assistant.db"
 
     # Handle Postgres URL schemes (common with Neon, Supabase, Heroku, Render)
