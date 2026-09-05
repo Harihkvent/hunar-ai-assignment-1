@@ -80,21 +80,36 @@ async def receive_hunar_webhook(
         interview.duration_minutes = float(payload.get("duration_minutes") or interview.duration_minutes)
         interview.answered_by = payload.get("answered_by") or interview.answered_by
 
-        if payload.get("recording_url"):
-            interview.recording_url = payload.get("recording_url")
-        if payload.get("result"):
-            interview.raw_result = payload.get("result")
+        rec = payload.get("recording_url") or payload.get("call_recording_url")
+        if rec:
+            interview.recording_url = rec
+
+        # Extract transcript
+        t = payload.get("transcript") or payload.get("full_transcript")
+        if not t and "call_analysis" in payload and isinstance(payload["call_analysis"], dict):
+            t = payload["call_analysis"].get("transcript")
+        if t:
+            interview.transcript = t
+
+        res = payload.get("result") or payload.get("call_result")
+        if not res and "call_analysis" in payload and isinstance(payload["call_analysis"], dict):
+            res = payload["call_analysis"].get("result")
+        if res:
+            interview.raw_result = res
 
         # If call completed, automatically generate evaluation
-        if interview.status == "COMPLETED" and not interview.evaluation:
+        if (interview.status == "COMPLETED" or interview.lifecycle_status == "COMPLETED") and not interview.evaluation:
+            interview.status = "COMPLETED"
             _generate_and_attach_evaluation(interview, db)
 
     elif event_type == "call_recording_done":
-        interview.recording_url = payload.get("recording_url")
+        interview.recording_url = payload.get("recording_url") or payload.get("call_recording_url")
 
     elif event_type == "call_result_done":
-        interview.raw_result = payload.get("result")
-        if interview.status == "COMPLETED" and not interview.evaluation:
+        interview.raw_result = payload.get("result") or payload.get("call_result")
+        if payload.get("transcript"):
+            interview.transcript = payload.get("transcript")
+        if not interview.evaluation:
             _generate_and_attach_evaluation(interview, db)
 
     db.commit()

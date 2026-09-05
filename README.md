@@ -34,7 +34,16 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 - **Integrated Audio Player**: Audio recording playback with waveform visualizer, seek bar, time tracking, and playback speed multiplier (1x, 1.25x, 1.5x, 2x).
 - **Recruiter Decision Workflow**: Recruiter decision buttons (`Shortlist for Round 2`, `Flag for Review`, `Reject`) with reviewer notes and interactive celebration effects.
 
-### 6. Security, Webhooks & System Diagnostics
+### 6. Talent Sourcing & People Search Engine
+- **Multi-Source Integration**: Native connectors for **Apollo.IO**, **People Data Labs (PDL)**, **Proxycurl**, and **Coresignal** with live API query support and high-fidelity local sandbox fallback.
+- **Smart JD Parser**: Automatically extracts job titles, required technical skills, experience requirements, and location preferences from job descriptions.
+- **1-Click Voice AI Reachout**: Instantly imports sourced candidate profiles into the hiring pipeline and triggers immediate automated voice screening calls.
+- **Conversation Responses Dashboard**: Real-time response modal and scorecard view putting candidate interview answers, duration, audio recordings, and signals back into the HR dashboard.
+
+### 7. Multi-Site Attendance Tracking (No Smartphones / No Apps)
+- **Comprehensive System Design Solution**: Complete architectural blueprint in [`ATTENDANCE_SYSTEM_DESIGN.md`](file:///d:/hunar-ai-assignment-1/ATTENDANCE_SYSTEM_DESIGN.md) for tracking 1,000 employees across 100 remote locations using Voice AI Toll-Free Inbound, 2-Way SMS/USSD, and Landline Geo-Anchoring.
+
+### 8. Security, Webhooks & System Diagnostics
 - **Strict Credential Isolation**: The Hunar API key is stored exclusively on the Python backend trust boundary and is never exposed to the client browser.
 - **Signed Webhook Receiver**: Endpoint at `/api/webhooks/hunar` verifies `X-Hunar-Signature` and `X-Hunar-Timestamp` using HMAC-SHA256 digests.
 - **Integration Health Monitor**: Live check of Hunar API authentication, agent provisioning counts, and organization caller ID phone numbers with allowed country destinations.

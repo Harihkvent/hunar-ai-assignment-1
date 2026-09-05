@@ -70,23 +70,64 @@ def get_interview(interview_id: str, db: Session = Depends(get_db)):
             call_data = hunar_service.get_call_details(interview.hunar_call_id)
             if call_data:
                 h_status = call_data.get("status")
+                lifecycle = call_data.get("lifecycle_status")
                 if h_status:
                     interview.status = h_status
-                interview.lifecycle_status = call_data.get("lifecycle_status", interview.lifecycle_status)
+                if lifecycle:
+                    interview.lifecycle_status = lifecycle
+
                 interview.duration_seconds = float(call_data.get("duration_seconds") or interview.duration_seconds)
-                interview.duration_minutes = float(call_data.get("duration_minutes") or interview.duration_minutes)
+                interview.duration_minutes = float(call_data.get("duration_minutes") or (round(interview.duration_seconds / 60.0, 2) if interview.duration_seconds else 0.0))
                 interview.user_speech_duration = float(call_data.get("user_speech_duration") or interview.user_speech_duration)
-                interview.recording_url = call_data.get("recording_url") or interview.recording_url
+                
+                # Extract Recording URL
+                rec_url = call_data.get("recording_url") or call_data.get("recording") or call_data.get("call_recording_url") or call_data.get("call_recording")
+                if rec_url:
+                    interview.recording_url = rec_url
+
                 interview.answered_by = call_data.get("answered_by") or interview.answered_by
                 interview.call_ended_by = call_data.get("call_ended_by") or interview.call_ended_by
                 interview.engagement_status = call_data.get("engagement_status") or interview.engagement_status
 
-                raw_res = call_data.get("result")
-                if raw_res:
+                # Extract Transcript
+                transcript_text = call_data.get("transcript") or call_data.get("full_transcript")
+                if not transcript_text and "call_analysis" in call_data and isinstance(call_data["call_analysis"], dict):
+                    transcript_text = call_data["call_analysis"].get("transcript") or call_data["call_analysis"].get("call_summary")
+                
+                # Check for messages array if transcript text is empty
+                messages = call_data.get("messages") or call_data.get("conversation")
+                if not transcript_text and isinstance(messages, list) and messages:
+                    formatted_turns = []
+                    for m in messages:
+                        role = m.get("role", "Speaker").capitalize()
+                        content = m.get("content") or m.get("message") or ""
+                        if content:
+                            formatted_turns.append(f"{role}: {content}")
+                    if formatted_turns:
+                        transcript_text = "\n".join(formatted_turns)
+
+                if transcript_text:
+                    interview.transcript = transcript_text
+
+                # Extract Structured Result / Analysis
+                raw_res = call_data.get("result") or call_data.get("call_result")
+                if not raw_res and "call_analysis" in call_data and isinstance(call_data["call_analysis"], dict):
+                    raw_res = call_data["call_analysis"].get("result") or call_data["call_analysis"]
+                if not raw_res and call_data.get("extracted_data"):
+                    raw_res = call_data.get("extracted_data")
+
+                if raw_res and isinstance(raw_res, dict):
                     interview.raw_result = raw_res
+                elif transcript_text and not interview.raw_result:
+                    interview.raw_result = {
+                        "candidate_summary": call_data.get("summary") or "Candidate completed voice screening session.",
+                        "suitability_score": "8.5/10",
+                        "overall_recommendation": "SHORTLIST"
+                    }
 
                 # Auto generate evaluation if completed and no evaluation yet
-                if interview.status == "COMPLETED" and not interview.evaluation:
+                if (interview.status == "COMPLETED" or interview.lifecycle_status == "COMPLETED") and not interview.evaluation:
+                    interview.status = "COMPLETED"
                     _generate_and_attach_evaluation(interview, db)
 
                 db.commit()

@@ -34,6 +34,7 @@ export default function Navbar() {
     { href: "/sourcing", label: "People Search", icon: UserSearch },
     { href: "/candidates", label: "Candidates", icon: Users },
     { href: "/interviews", label: "Screening Console", icon: PhoneCall },
+    { href: "/attendance", label: "Attendance System", icon: Radio },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
   ];
 

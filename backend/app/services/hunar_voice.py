@@ -192,6 +192,10 @@ class HunarVoiceService:
 
         # Webhook callback URLs (Hunar API strictly requires https scheme for callbacks)
         cb_base = callback_base_url or settings.WEBHOOK_BASE_URL
+        if not cb_base and os.getenv("VERCEL"):
+            # Default to Vercel deployment backend URL if not set
+            cb_base = "https://hunar-ai-assignment-1.vercel.app"
+        
         if cb_base and cb_base.strip().lower().startswith("https://"):
             cb_clean = cb_base.strip().rstrip('/')
             call_payload["callback_config"] = {
