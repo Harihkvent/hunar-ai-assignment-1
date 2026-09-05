@@ -14,9 +14,9 @@ import {
   ExternalLink,
   Sparkles
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Interview } from "@/lib/types";
-import { formatDate, formatDuration, getStatusBadgeColor } from "@/lib/utils";
+import { api } from "../../lib/api";
+import { Interview } from "../../lib/types";
+import { formatDate, formatDuration, getStatusBadgeColor } from "../../lib/utils";
 
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<Interview[]>([]);

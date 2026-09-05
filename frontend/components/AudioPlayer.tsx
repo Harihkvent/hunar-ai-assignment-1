@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, RotateCcw, ExternalLink, Sparkles } from "lucide-react";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration } from "../lib/utils";
 
 interface AudioPlayerProps {
   recordingUrl?: string | null;
