@@ -33,8 +33,17 @@ export function getScoreBadgeColor(score: number): string {
   return "bg-rose-500/15 text-rose-400 border-rose-500/30";
 }
 
+export function formatStatus(status?: string | null): string {
+  if (!status) return "—";
+  const formatted = status.replace(/_/g, " ").toLowerCase();
+  return formatted
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export function getStatusBadgeColor(status: string): string {
-  switch (status) {
+  switch (status?.toUpperCase()) {
     case "COMPLETED":
     case "SHORTLISTED":
     case "ACTIVE":
@@ -43,7 +52,7 @@ export function getStatusBadgeColor(status: string): string {
     case "RINGING":
     case "INITIATED":
     case "SCREENING_SCHEDULED":
-      return "bg-sky-500/15 text-sky-400 border-sky-500/30 animate-pulse";
+      return "bg-sky-500/15 text-sky-400 border-sky-500/30";
     case "NEEDS_REVIEW":
     case "PAUSED":
       return "bg-amber-500/15 text-amber-400 border-amber-500/30";
@@ -52,6 +61,7 @@ export function getStatusBadgeColor(status: string): string {
     case "CANCELLED":
     case "CLOSED":
       return "bg-rose-500/15 text-rose-400 border-rose-500/30";
+    case "APPLIED":
     default:
       return "bg-slate-500/15 text-slate-300 border-slate-500/30";
   }

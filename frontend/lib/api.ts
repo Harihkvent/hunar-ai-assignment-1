@@ -67,6 +67,20 @@ export const api = {
     request<Job>(`/jobs/${id}/sync-agent`, {
       method: "POST",
     }),
+  generateQuestions: (params: {
+    title: string;
+    description?: string;
+    required_skills?: string[];
+    experience_min?: number;
+    experience_max?: number;
+  }) =>
+    request<{ job_title: string; recommended_questions: string[]; question_count: number }>(
+      "/jobs/generate-questions",
+      {
+        method: "POST",
+        body: JSON.stringify(params),
+      }
+    ),
   deleteJob: (id: string) =>
     request<void>(`/jobs/${id}`, {
       method: "DELETE",

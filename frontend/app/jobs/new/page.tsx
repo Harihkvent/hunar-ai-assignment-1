@@ -92,13 +92,35 @@ export default function NewJobPage() {
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
-  const generateDefaultQuestionsForTitle = () => {
-    if (!title.trim()) return;
-    setQuestions([
-      `How many years of relevant experience do you have with ${requiredSkills.slice(0, 2).join(" and ") || "this tech stack"}?`,
-      `Can you discuss a complex project you developed recently for a ${title} role?`,
-      "What is your current notice period and target CTC?"
-    ]);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+
+  const generateDefaultQuestionsForTitle = async () => {
+    if (!title.trim()) {
+      alert("Please enter a Job Title first so AI can tailor the screening questions.");
+      return;
+    }
+    setIsGeneratingQuestions(true);
+    try {
+      const res = await api.generateQuestions({
+        title,
+        description,
+        required_skills: requiredSkills,
+        experience_min: experienceMin,
+        experience_max: experienceMax,
+      });
+      if (res.recommended_questions && res.recommended_questions.length > 0) {
+        setQuestions(res.recommended_questions);
+      }
+    } catch (e) {
+      // Fallback
+      setQuestions([
+        `How many years of relevant experience do you have with ${requiredSkills.slice(0, 2).join(" and ") || "this tech stack"}?`,
+        `Can you discuss a complex project you developed recently for a ${title} role?`,
+        "What is your current notice period and target CTC?"
+      ]);
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -390,16 +412,15 @@ export default function NewJobPage() {
               <Bot className="w-4 h-4 text-emerald-400" />
               <span>Voice Screening Questions</span>
             </h3>
-            {title && (
-              <button
-                type="button"
-                onClick={generateDefaultQuestionsForTitle}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Suggest Questions</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={generateDefaultQuestionsForTitle}
+              disabled={isGeneratingQuestions}
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all disabled:opacity-50"
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${isGeneratingQuestions ? "animate-spin text-amber-400" : "text-indigo-400"}`} />
+              <span>{isGeneratingQuestions ? "Generating AI Questions..." : "✨ Auto-Generate with AI"}</span>
+            </button>
           </div>
 
           <p className="text-xs text-slate-400">

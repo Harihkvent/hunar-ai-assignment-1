@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { Candidate, Job } from "../../lib/types";
-import { formatDate, getStatusBadgeColor, getScoreBadgeColor } from "../../lib/utils";
+import { formatDate, getStatusBadgeColor, getScoreBadgeColor, formatStatus } from "../../lib/utils";
 import VoiceScreeningModal from "../../components/VoiceScreeningModal";
 import QuickScreeningAnswersModal from "../../components/QuickScreeningAnswersModal";
 
@@ -167,9 +167,9 @@ export default function CandidatesPage() {
                     <td className="px-5 py-4 text-slate-300">
                       {cand.experience_years} Years
                     </td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2 py-0.5 rounded-full border text-[11px] font-semibold ${getStatusBadgeColor(cand.status)}`}>
-                        {cand.status.replace("_", " ")}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[11px] font-semibold tracking-wide ${getStatusBadgeColor(cand.status)}`}>
+                        {formatStatus(cand.status)}
                       </span>
                     </td>
                     <td className="px-5 py-4">

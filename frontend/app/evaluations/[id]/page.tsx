@@ -18,7 +18,8 @@ import {
   MessageSquare,
   Save,
   Check,
-  PhoneCall
+  PhoneCall,
+  Printer
 } from "lucide-react";
 import { api } from "../../../lib/api";
 import { Evaluation } from "../../../lib/types";
@@ -164,7 +165,17 @@ export default function EvaluationPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto print:hidden">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all active:scale-95"
+            title="Export full executive candidate scorecard to PDF or physical print"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Export Scorecard (PDF)</span>
+          </button>
+
           <button
             onClick={handleRegenerate}
             disabled={isRegenerating}
@@ -172,7 +183,7 @@ export default function EvaluationPage({ params }: { params: Promise<{ id: strin
             title="Recompute evaluation scores and signals"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${isRegenerating ? "animate-spin text-indigo-400" : ""}`} />
-            <span>{isRegenerating ? "Recalculating..." : "Recalculate Scorecard"}</span>
+            <span>{isRegenerating ? "Recalculating..." : "Recalculate"}</span>
           </button>
 
           <Link
@@ -182,6 +193,14 @@ export default function EvaluationPage({ params }: { params: Promise<{ id: strin
             <PhoneCall className="w-3.5 h-3.5" />
             <span>Screening Logs</span>
           </Link>
+        </div>
+      </div>
+
+      {/* Print-only Dossier Watermark / Header */}
+      <div className="hidden print:block border-b-2 border-slate-300 pb-3 mb-4">
+        <div className="flex justify-between items-center text-xs text-slate-600">
+          <span className="font-bold text-slate-900 tracking-wider">HUNAR.AI • EXECUTIVE VOICE SCREENING SCORECARD</span>
+          <span>Evaluation ID: {interviewId.slice(0, 8)} • Generated: {new Date().toLocaleDateString()}</span>
         </div>
       </div>
 
@@ -258,18 +277,20 @@ export default function EvaluationPage({ params }: { params: Promise<{ id: strin
 
       {/* Audio Recording & Transcript */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AudioPlayer
-          recordingUrl={evaluation.recording_url}
-          candidateName={evaluation.candidate_name}
-        />
+        <div className="print:hidden">
+          <AudioPlayer
+            recordingUrl={evaluation.recording_url}
+            candidateName={evaluation.candidate_name}
+          />
+        </div>
 
         {evaluation.transcript && (
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-3">
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-3 print:col-span-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
               <FileText className="w-4 h-4 text-indigo-400" />
               <span>Conversation Transcript</span>
             </h4>
-            <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 text-xs text-slate-300 font-mono whitespace-pre-line leading-relaxed max-h-56 overflow-y-auto">
+            <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 text-xs text-slate-300 font-mono whitespace-pre-line leading-relaxed max-h-56 print:max-h-none overflow-y-auto">
               {evaluation.transcript}
             </div>
           </div>
@@ -285,14 +306,21 @@ export default function EvaluationPage({ params }: { params: Promise<{ id: strin
           </h3>
 
           {saveSuccess && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold animate-in fade-in">
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold animate-in fade-in print:hidden">
               <Check className="w-4 h-4" />
               <span>Decision Saved Successfully!</span>
             </span>
           )}
         </div>
 
-        <div>
+        {/* Static Display for Print */}
+        <div className="hidden print:block space-y-2 text-xs">
+          <div><strong>Current Pipeline Status:</strong> {recruiterStatus}</div>
+          <div><strong>Notes:</strong> {recruiterNotes || "No notes recorded."}</div>
+        </div>
+
+        {/* Interactive Editing for UI */}
+        <div className="print:hidden">
           <label className="block text-xs font-semibold text-slate-300 mb-1.5">
             Recruiter Review Notes
           </label>
@@ -306,7 +334,7 @@ export default function EvaluationPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-2 print:hidden">
           <button
             type="button"
             onClick={() => handleDecision("REJECTED")}

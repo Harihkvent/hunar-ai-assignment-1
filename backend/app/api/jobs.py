@@ -154,6 +154,64 @@ def sync_job_agent(job_id: str, db: Session = Depends(get_db)):
     return j_resp
 
 
+@router.post("/generate-questions")
+def generate_screening_questions(payload: dict):
+    """
+    AI-assisted screening question generator based on job title, description, skills, and experience range.
+    """
+    title = (payload.get("title") or "Software Engineer").strip()
+    description = (payload.get("description") or "").lower()
+    skills = payload.get("required_skills") or []
+    skills_lower = [str(s).lower() for s in skills]
+    exp_min = payload.get("experience_min") or 2
+    exp_max = payload.get("experience_max") or 6
+
+    questions = []
+
+    # 1. Experience & Background Question
+    questions.append(
+        f"Can you summarize your core professional background and how many years of production experience you have with {', '.join(skills[:3]) if skills else title}?"
+    )
+
+    # 2. Technical Competence & Architecture Question
+    if any(k in skills_lower for k in ["react", "next.js", "frontend", "vue", "angular", "typescript"]):
+        questions.append(
+            "How do you handle state management, component re-renders, and server-side rendering performance in modern React and Next.js applications?"
+        )
+    elif any(k in skills_lower for k in ["python", "fastapi", "django", "backend", "node.js", "go", "java"]):
+        questions.append(
+            "How do you approach database connection pooling, async concurrency, and API latency optimization in high-throughput backend services?"
+        )
+    elif any(k in skills_lower for k in ["ai", "machine learning", "llm", "nlp", "pytorch", "langchain"]):
+        questions.append(
+            "What architectures or prompt engineering pipelines have you built for LLM agents, and how do you mitigate hallucination and latency?"
+        )
+    elif any(k in skills_lower for k in ["devops", "kubernetes", "docker", "aws", "terraform"]):
+        questions.append(
+            "Can you describe your experience designing zero-downtime CI/CD deployment pipelines and container orchestration in Kubernetes?"
+        )
+    else:
+        questions.append(
+            f"What was the most challenging technical project you delivered in a {title} capacity, and how did you approach the system architecture?"
+        )
+
+    # 3. Problem Solving & Real-world Debugging Question
+    questions.append(
+        "Can you walk me through a critical production bug or performance bottleneck you resolved under tight deadlines?"
+    )
+
+    # 4. Logistics & Compensation Question
+    questions.append(
+        "What is your current notice period and what are your total compensation expectations for this position?"
+    )
+
+    return {
+        "job_title": title,
+        "recommended_questions": questions,
+        "question_count": len(questions),
+    }
+
+
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_job(job_id: str, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()

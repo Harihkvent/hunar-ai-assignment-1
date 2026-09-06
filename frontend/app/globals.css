@@ -76,3 +76,35 @@ body {
 .animate-wave-3 { animation: wave-bar 1.4s ease-in-out infinite 0.4s; }
 .animate-wave-4 { animation: wave-bar 0.8s ease-in-out infinite 0.1s; }
 .animate-wave-5 { animation: wave-bar 1.1s ease-in-out infinite 0.3s; }
+
+/* Print Media Styles for Executive Scorecard PDF */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
+  
+  nav, header, aside, .print\:hidden {
+    display: none !important;
+  }
+
+  .glass-panel {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+  }
+
+  .text-white {
+    color: #0f172a !important;
+  }
+
+  .text-slate-300, .text-slate-400 {
+    color: #475569 !important;
+  }
+
+  .bg-slate-900, .bg-slate-950, .bg-slate-950\/60, .bg-slate-950\/70, .bg-slate-900\/80, .bg-slate-900\/70 {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+}

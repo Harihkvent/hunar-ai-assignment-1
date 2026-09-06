@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { api } from "../../../lib/api";
 import { Candidate, Interview, Job } from "../../../lib/types";
-import { formatDate, formatDuration, getStatusBadgeColor, getScoreBadgeColor } from "../../../lib/utils";
+import { formatDate, formatDuration, getStatusBadgeColor, getScoreBadgeColor, formatStatus } from "../../../lib/utils";
 import VoiceScreeningModal from "../../../components/VoiceScreeningModal";
 
 export default function CandidateDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -79,8 +79,8 @@ export default function CandidateDetailPage({ params }: { params: Promise<{ id: 
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getStatusBadgeColor(candidate.status)}`}>
-                {candidate.status.replace("_", " ")}
+              <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border tracking-wide ${getStatusBadgeColor(candidate.status)}`}>
+                {formatStatus(candidate.status)}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">
@@ -187,8 +187,8 @@ export default function CandidateDetailPage({ params }: { params: Promise<{ id: 
                       <span className="font-bold text-sm text-slate-100">
                         Session: {intItem.request_id}
                       </span>
-                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${getStatusBadgeColor(intItem.status)}`}>
-                        {intItem.status.replace("_", " ")}
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border tracking-wide ${getStatusBadgeColor(intItem.status)}`}>
+                        {formatStatus(intItem.status)}
                       </span>
                       <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
                         {intItem.mode}
