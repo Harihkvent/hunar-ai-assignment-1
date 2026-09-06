@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 try:
     from app.core.database import get_db
@@ -23,7 +23,10 @@ def list_candidates(
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Candidate)
+    query = db.query(Candidate).options(
+        joinedload(Candidate.job),
+        joinedload(Candidate.interviews).joinedload(Interview.evaluation)
+    )
     if job_id:
         query = query.filter(Candidate.job_id == job_id)
     if status_filter:
@@ -37,14 +40,11 @@ def list_candidates(
         c_resp = CandidateResponse.model_validate(c)
         if c.job:
             c_resp.job_title = c.job.title
-        # Check latest interview
-        latest_int = (
-            db.query(Interview)
-            .filter(Interview.candidate_id == c.id)
-            .order_by(Interview.created_at.desc())
-            .first()
-        )
-        if latest_int:
+        
+        # Determine latest interview from preloaded in-memory list (zero SQL queries)
+        if c.interviews:
+            sorted_ints = sorted(c.interviews, key=lambda x: x.created_at or x.id, reverse=True)
+            latest_int = sorted_ints[0]
             c_resp.latest_interview_status = latest_int.status
             c_resp.latest_interview_id = latest_int.id
             if latest_int.evaluation:

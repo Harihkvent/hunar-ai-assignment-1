@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 try:
     from app.core.database import get_db
@@ -24,7 +24,10 @@ def list_jobs(
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Job)
+    query = db.query(Job).options(
+        joinedload(Job.candidates),
+        joinedload(Job.interviews)
+    )
     if status_filter:
         query = query.filter(Job.status == status_filter)
     if search:
@@ -33,11 +36,9 @@ def list_jobs(
     jobs = query.order_by(Job.created_at.desc()).all()
     results = []
     for j in jobs:
-        c_count = db.query(Candidate).filter(Candidate.job_id == j.id).count()
-        i_count = db.query(Interview).filter(Interview.job_id == j.id).count()
         j_resp = JobResponse.model_validate(j)
-        j_resp.candidate_count = c_count
-        j_resp.interview_count = i_count
+        j_resp.candidate_count = len(j.candidates)
+        j_resp.interview_count = len(j.interviews)
         results.append(j_resp)
     return results
 

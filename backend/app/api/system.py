@@ -23,26 +23,57 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["System & Dashboard"])
 
 
+import time
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
+
+# Simple short-lived in-memory cache for ultra-fast navigation (3s TTL)
+_stats_cache = {"data": None, "timestamp": 0.0}
+
 @router.get("/dashboard/stats", response_model=DashboardStats)
 def get_dashboard_stats(db: Session = Depends(get_db)):
+    now = time.time()
+    if _stats_cache["data"] and (now - _stats_cache["timestamp"]) < 3.0:
+        return _stats_cache["data"]
+
+    # 1. Job counts
     total_jobs = db.query(Job).count()
     active_jobs = db.query(Job).filter(Job.status == "ACTIVE").count()
 
-    total_candidates = db.query(Candidate).count()
-    screened_candidates = db.query(Candidate).filter(Candidate.status.in_(["SCREENED", "SHORTLISTED", "NEEDS_REVIEW", "REJECTED"])).count()
+    # 2. Consolidated candidate status counts in a single query
+    status_counts = dict(
+        db.query(Candidate.status, func.count(Candidate.id))
+        .group_by(Candidate.status)
+        .all()
+    )
+    total_candidates = sum(status_counts.values())
+    shortlisted = status_counts.get("SHORTLISTED", 0)
+    needs_review = status_counts.get("NEEDS_REVIEW", 0)
+    rejected = status_counts.get("REJECTED", 0)
+    screened_candidates = (
+        status_counts.get("SCREENED", 0) + shortlisted + needs_review + rejected
+    )
+
+    # 3. Completed interviews & average score
     completed_interviews = db.query(Interview).filter(Interview.status == "COMPLETED").count()
-
-    shortlisted = db.query(Candidate).filter(Candidate.status == "SHORTLISTED").count()
-    needs_review = db.query(Candidate).filter(Candidate.status == "NEEDS_REVIEW").count()
-    rejected = db.query(Candidate).filter(Candidate.status == "REJECTED").count()
-
     avg_score_res = db.query(func.avg(Evaluation.overall_score)).scalar()
     avg_score = round(float(avg_score_res), 1) if avg_score_res is not None else 0.0
 
-    recent_ints = db.query(Interview).order_by(Interview.created_at.desc()).limit(6).all()
+    # 4. Recent interviews with preloaded relationships in 1 query
+    recent_ints = (
+        db.query(Interview)
+        .options(
+            joinedload(Interview.candidate),
+            joinedload(Interview.job),
+            joinedload(Interview.evaluation),
+        )
+        .order_by(Interview.created_at.desc())
+        .limit(6)
+        .all()
+    )
     recent_responses = [_populate_interview_response(i, db) for i in recent_ints]
 
-    return DashboardStats(
+    result = DashboardStats(
         total_jobs=total_jobs,
         active_jobs=active_jobs,
         total_candidates=total_candidates,
@@ -54,6 +85,9 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         average_score=avg_score,
         recent_interviews=recent_responses,
     )
+    _stats_cache["data"] = result
+    _stats_cache["timestamp"] = now
+    return result
 
 
 @router.get("/system/health", response_model=SystemHealthResponse)

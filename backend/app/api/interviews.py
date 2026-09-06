@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Header, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 try:
     from app.core.config import settings
@@ -46,7 +46,11 @@ def list_interviews(
     status_filter: Optional[str] = Query(None, alias="status"),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Interview)
+    query = db.query(Interview).options(
+        joinedload(Interview.candidate),
+        joinedload(Interview.job),
+        joinedload(Interview.evaluation)
+    )
     if job_id:
         query = query.filter(Interview.job_id == job_id)
     if candidate_id:
