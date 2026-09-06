@@ -69,6 +69,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def add_cache_control_header(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 # Mount API routers
 app.include_router(jobs.router, prefix=settings.API_V1_STR)
 app.include_router(candidates.router, prefix=settings.API_V1_STR)

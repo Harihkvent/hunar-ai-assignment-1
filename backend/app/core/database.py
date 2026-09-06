@@ -11,7 +11,7 @@ except ImportError:
 def get_normalized_database_url(raw_url: str) -> str:
     """
     Normalizes PostgreSQL and SQLite URLs for serverless & cloud deployment.
-    - Converts postgres:// to postgresql+pg8000:// (or postgresql://)
+    - Handles Neon / Supabase / Postgres URLs
     - If running on Vercel with SQLite, routes to writable /tmp
     """
     is_serverless = bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
@@ -23,12 +23,9 @@ def get_normalized_database_url(raw_url: str) -> str:
     if is_serverless and "sqlite" in raw_url and "/tmp" not in raw_url:
         return "sqlite:////tmp/hiring_assistant.db"
 
-    # Handle Postgres URL schemes (common with Neon, Supabase, Heroku, Render)
+    # Normalize Postgres URL schemes
     if raw_url.startswith("postgres://"):
-        raw_url = raw_url.replace("postgres://", "postgresql+pg8000://", 1)
-    elif raw_url.startswith("postgresql://") and "+pg8000" not in raw_url and "+psycopg2" not in raw_url:
-        # Default to pg8000 driver for pure-Python serverless compatibility
-        raw_url = raw_url.replace("postgresql://", "postgresql+pg8000://", 1)
+        raw_url = raw_url.replace("postgres://", "postgresql://", 1)
 
     return raw_url
 
@@ -41,8 +38,27 @@ if db_url.startswith("sqlite"):
     engine = create_engine(db_url, connect_args=connect_args, echo=False)
 else:
     # Cloud PostgreSQL (Neon, Supabase, Vercel Postgres, etc.)
+    connect_args = {}
+    
+    # Robust fallback for local Windows DNS when connecting to Neon
+    if "neon.tech" in db_url:
+        import socket
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(db_url)
+            host = parsed.hostname
+            if host:
+                try:
+                    socket.gethostbyname(host)
+                except Exception:
+                    # Fallback IP for Neon us-east-2 endpoint router
+                    connect_args["hostaddr"] = "3.143.47.40"
+        except Exception:
+            pass
+
     engine = create_engine(
         db_url,
+        connect_args=connect_args,
         pool_pre_ping=True,
         pool_recycle=300,
         echo=False

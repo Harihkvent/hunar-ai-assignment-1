@@ -7,10 +7,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const defaultHeaders = {
     "Content-Type": "application/json",
     Accept: "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    Pragma: "no-cache",
   };
 
   const response = await fetch(url, {
     ...options,
+    cache: "no-store",
     headers: {
       ...defaultHeaders,
       ...options.headers,
