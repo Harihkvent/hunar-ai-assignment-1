@@ -1,6 +1,8 @@
-# Hunar.AI — AI Hiring Assistant & Voice Screening Platform
+# Hunar.AI — AI Hiring Assistant, Sourcing & Voice Screening Platform
 
-An AI-powered voice screening and recruitment web application for HR and talent acquisition teams to configure hiring positions, initiate automated phone screening calls using **Hunar.AI Voice AI Agents**, capture conversation audio & transcripts, generate structured multi-dimensional candidate evaluations, and review decisions in an executive dashboard.
+An enterprise AI-powered voice screening and recruitment web application for HR and talent acquisition teams to configure hiring positions, source talent across multiple providers, initiate automated phone screening calls using **Hunar.AI Voice AI Agents**, capture conversation audio & transcripts, generate structured multi-dimensional candidate evaluations, and review decisions in an executive dashboard.
+
+Includes a comprehensive technical system design and live interactive architecture console for **AI-Assisted Multi-Site Attendance Tracking Without Smartphones** ([`docs/ASSIGNMENT_3_SYSTEM_DESIGN.md`](docs/ASSIGNMENT_3_SYSTEM_DESIGN.md)).
 
 ---
 
@@ -40,8 +42,16 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 - **1-Click Voice AI Reachout**: Instantly imports sourced candidate profiles into the hiring pipeline and triggers immediate automated voice screening calls.
 - **Conversation Responses Dashboard**: Real-time response modal and scorecard view putting candidate interview answers, duration, audio recordings, and signals back into the HR dashboard.
 
-### 7. Multi-Site Attendance Tracking (No Smartphones / No Apps)
-- **Comprehensive System Design Solution**: Complete architectural blueprint in [`ATTENDANCE_SYSTEM_DESIGN.md`](file:///d:/hunar-ai-assignment-1/ATTENDANCE_SYSTEM_DESIGN.md) for tracking 1,000 employees across 100 remote locations using Voice AI Toll-Free Inbound, 2-Way SMS/USSD, and Landline Geo-Anchoring.
+### 7. Multi-Site Attendance Tracking Without Smartphones (Assignment 3)
+- **Technical System Design Specification**: Complete architectural design in [`docs/ASSIGNMENT_3_SYSTEM_DESIGN.md`](docs/ASSIGNMENT_3_SYSTEM_DESIGN.md) addressing how HR tracks **1,000 workers across 100 decentralized locations** every day without smartphones or apps.
+- **Live Interactive Architecture Console (`/attendance`)**:
+  1. **System Topology & Blueprint**: Visual architecture flow with multi-tier ingestion, LLM vernacular semantic parsing, deterministic state validation, and PostgreSQL immutable audit trails.
+  2. **Multi-Channel Simulator**: Real-time interactive simulation of Inbound Voice IVR (Hindi, Tamil, Telugu, English), 2-Way SMS Shortcode (56767), 09:20 AM Autonomous Outbound Follow-Up, Supervisor Landline Roll-Call, and On-Site RFID Badges.
+  3. **100-Location Grid & Heatmap**: Full 100-site operational grid with search, zone filtering, status indicators, and modal drilldowns.
+  4. **State Machine & 24-Hour Cycle**: Explicit state transition lifecycle (`EXPECTED` -> `PRESENT` / `PENDING` -> `LATE` / `EXCUSED` / `UNEXCUSED_ABSENT`) and 08:30–09:30 AM execution cycle.
+  5. **Anti-Proxy & Location Security**: 4-layer identity defense (CLI SIM ANI, Hardwired Landline Geo-Anchoring, Dynamic Audio TOTP, Acoustic Voice Biometrics) and hardware vs telephony trade-off matrix.
+  6. **LLM HR Intelligence Assistant**: Conversational natural-language query interface analyzing absenteeism clusters, late arrival spikes, and organization compliance.
+  7. **Operational Unit Economics Matrix**: Itemized cost breakdown demonstrating **$0.25 / employee / month** (~$9.65 / day total) scalability.
 
 ### 8. Security, Webhooks & System Diagnostics
 - **Strict Credential Isolation**: The Hunar API key is stored exclusively on the Python backend trust boundary and is never exposed to the client browser.
@@ -50,7 +60,7 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 
 ---
 
-##  Architecture & Tech Stack
+## Architecture & Tech Stack
 
 ```text
 ┌────────────────────────────────────────────────────────┐
@@ -58,9 +68,11 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 │   Next.js 14+ (App Router, TypeScript, Tailwind CSS)   │
 │   - Overview Dashboard & Analytics                     │
 │   - Job Builder & Agent Synchronizer                   │
+│   - Talent Sourcing & People Search (Apollo/PDL/etc)   │
 │   - Candidate Pipeline Directory                       │
 │   - Real-Time Screening Console & Audio Player         │
 │   - Structured Evaluation Scorecards                   │
+│   - Attendance System Architecture & Simulator         │
 └───────────────────────────┬────────────────────────────┘
                             │ REST API / JSON
                             ▼
@@ -70,6 +82,7 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 │   - /api/candidates (Pipeline & Attachments)           │
 │   - /api/interviews (Trigger Calls, Poll, Simulate)    │
 │   - /api/evaluations (Scorecards & Recruiter Decision) │
+│   - /api/sourcing (Multi-Provider People Search)       │
 │   - /api/webhooks/hunar (HMAC-SHA256 Signed Receiver)  │
 │   - /api/system/health (Telephony & Connection Health) │
 └─────────────┬───────────────────────────┬──────────────┘
@@ -86,6 +99,7 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy, Pydantic v2, HTTPX, Uvicorn
 - **Frontend**: Next.js 14+, React.js, TypeScript, Tailwind CSS, Lucide Icons, Canvas Confetti
 - **Voice AI Provider**: Hunar.AI External Voice Agent API (`https://api.voice.hunar.ai/external/v1/`)
+- **System Design Documentation**: [`docs/ASSIGNMENT_3_SYSTEM_DESIGN.md`](docs/ASSIGNMENT_3_SYSTEM_DESIGN.md) & [`docs/DESIGN.md`](docs/DESIGN.md)
 
 ---
 
@@ -93,7 +107,7 @@ An AI-powered voice screening and recruitment web application for HR and talent 
 
 ### Prerequisites
 - Python 3.10+ (tested on Python 3.12)
-- Node.js 18+ (tested on Node.js v24)
+- Node.js 18+ (tested on Node.js v20/v24)
 - npm or yarn
 
 ---
@@ -137,7 +151,7 @@ python -m venv backend/.venv
 # Install dependencies
 pip install -r backend/requirements.txt
 
-# Run database tests & automated test suite
+# Run automated test suite
 python backend/test_e2e.py
 
 # Start the FastAPI server
@@ -174,9 +188,13 @@ The web application will be accessible at: `http://localhost:3000`
 
 ## Automated Testing
 
-To run the complete automated test suite verifying health check, job creation, candidate attachment, voice screening session, scorecard evaluation, and HMAC webhook signature validation:
+To run the complete automated test suite verifying health check, job creation, candidate attachment, voice screening session, scorecard evaluation, HMAC webhook validation, and people search sourcing connectors:
 
 ```bash
+# Windows
+.\backend\.venv\Scripts\python.exe backend/test_e2e.py
+
+# macOS / Linux
 python backend/test_e2e.py
 ```
 
@@ -191,10 +209,17 @@ Running End-to-End System Tests
 [4/7] Testing Candidate Attachment... [OK]
 [5/7] Testing Voice Screening Session Execution... [OK]
 [6/7] Testing Structured Evaluation Scorecard & Decision... [OK]
-[7/7] Testing Webhook Signature Verification... [OK]
+[7/9] Testing Webhook Signature Verification... [OK]
+[8/9] Testing People Search & Sourcing Engine (Apollo/PDL/Proxycurl/Coresignal)... [OK]
+[9/9] Testing 1-Click Import & Voice AI Reachout... [OK]
 ========================================
-ALL TESTS PASSED SUCCESSFULLY (7/7) [OK]
+ALL TESTS PASSED SUCCESSFULLY (9/9) [OK]
 ========================================
+```
+
+To verify the Next.js frontend TypeScript build:
+```bash
+npm --prefix frontend run build
 ```
 
 ---
@@ -231,4 +256,4 @@ ALL TESTS PASSED SUCCESSFULLY (7/7) [OK]
 ---
 
 ## License
-MIT License. Built for Hunar.AI Assignment 1.
+MIT License. Built for Hunar.AI Assignment.
