@@ -2,13 +2,15 @@
 
 ## 1. Problem Statement
 
-> If there were no smartphones but LLMs exist/everything else exists except apps and you are an HR who has to track attendance of 1,000 people every day in 100 locations, what would you do?
+> **“If there were no smartphones but LLMs exist/everything else exists except apps and you are an HR who has to track attendance of 1,000 people everyday in 100 locations, what would you do?”**
 
-The problem is to design a practical attendance system that works at scale **without requiring smartphones or employee mobile applications**, while still giving HR a reliable, centralized view of attendance across 100 locations.
+The challenge is to design a practical, reliable attendance system that works **without smartphones or employee attendance apps**, while allowing HR to track 1,000 employees across 100 locations every day.
+
+The goal is not to recreate a smartphone application through another interface. The goal is to replace the smartphone/app layer with technologies that remain available under the stated constraints.
 
 ---
 
-## 2. Constraints
+## 2. Constraints and Assumptions
 
 ### Employee-side constraints
 
@@ -23,8 +25,8 @@ The problem is to design a practical attendance system that works at scale **wit
 - Voice calls / IVR.
 - SMS and USSD where supported.
 - Landlines and site-level telephony.
-- RFID / biometric attendance hardware where appropriate.
-- Backend servers, databases, queues and automation.
+- RFID / biometric attendance terminals where practical.
+- Backend servers, databases, queues and schedulers.
 - LLMs and Voice AI / speech-to-text / text-to-speech.
 
 ### Scale
@@ -32,6 +34,10 @@ The problem is to design a practical attendance system that works at scale **wit
 - 1,000 employees.
 - 100 locations.
 - Daily attendance collection.
+
+### Key design principle
+
+> **LLMs understand human language; deterministic services decide authoritative attendance.**
 
 ---
 
@@ -43,16 +49,12 @@ Instead of building a smartphone attendance app, the system uses **basic telecom
 
 Employees can record attendance through:
 
-1. **Voice / IVR** — primary conversational option.
-2. **SMS / USSD** — low-bandwidth fallback.
-3. **RFID / biometric terminal** — strongest physical-presence option for locations where hardware is practical.
-4. **Site supervisor / landline workflow** — operational fallback for exceptional cases.
+1. **Voice / IVR** — conversational and accessible from feature phones.
+2. **SMS / USSD** — lightweight fallback where supported.
+3. **RFID / biometric terminal** — preferred where stronger physical-presence verification is required.
+4. **Site supervisor / landline workflow** — operational fallback for exceptional situations.
 
-A central backend validates every attendance event and provides HR with a real-time dashboard.
-
-The core architectural principle is:
-
-> **LLMs understand human language; deterministic systems decide attendance.**
+A central backend receives attendance events, validates them against employee, site, shift and attendance policy, stores an auditable record, and exposes the results to HR through a centralized dashboard.
 
 ---
 
@@ -81,12 +83,12 @@ The core architectural principle is:
             └─────────────────────────┼─────────────────────────┘
                                       ▼
                            ┌───────────────────────┐
-                           │   PostgreSQL / DB     │
+                           │    PostgreSQL / DB    │
                            └───────────┬───────────┘
                                        │
                            ┌───────────▼───────────┐
-                           │   Queue / Scheduler    │
-                           │    Redis / Workers     │
+                           │ Scheduler / Queue     │
+                           │ Redis + Workers       │
                            └───────────┬───────────┘
                                        │
               ┌────────────────────────┼─────────────────────────┐
@@ -103,7 +105,7 @@ The core architectural principle is:
                            Attendance Events
                                   │
                                   ▼
-                       Validation + Audit Trail
+                        Validation + Audit Trail
 ```
 
 ---
@@ -112,81 +114,87 @@ The core architectural principle is:
 
 ### 5.1 Voice / IVR Check-In
 
-An employee arrives at their assigned location and uses a basic phone.
+For sites using telephony, an employee can call the configured attendance number from a basic phone.
+
+```text
+Employee
+   │
+   │ Calls attendance endpoint
+   ▼
+Telephony / IVR Gateway
+   │
+   ├── Caller number → employee lookup
+   ├── Called endpoint → site context
+   └── Timestamp → event time
+   │
+   ▼
+Identity Verification
+   │
+   └── PIN / voice challenge when required
+   │
+   ▼
+Voice AI + LLM
+   │
+   └── Interprets confirmation / exception
+   │
+   ▼
+Attendance Rules Engine
+   │
+   ├── Correct employee?
+   ├── Correct assigned site?
+   ├── Scheduled today?
+   ├── Valid attendance window?
+   └── Duplicate check?
+   │
+   ▼
+Attendance Database
+   │
+   └── PRESENT / LATE / EXCEPTION
+```
 
 Example:
 
-```text
-Employee at Site 42
-        │
-        │ Calls attendance number
-        ▼
-Telephony / IVR Gateway
-        │
-        ├── Caller number → employee lookup
-        ├── Called endpoint → site identification
-        └── Timestamp → attendance event time
-        │
-        ▼
-Identity Verification
-        │
-        └── PIN / voice challenge when required
-        │
-        ▼
-Voice AI + LLM
-        │
-        └── Interprets confirmation / exception
-        │
-        ▼
-Attendance Rules Engine
-        │
-        ├── Correct employee?
-        ├── Correct assigned site?
-        ├── Scheduled today?
-        ├── Valid attendance window?
-        └── Duplicate check?
-        │
-        ▼
-Attendance Database
-        │
-        └── PRESENT / LATE / EXCEPTION
-```
-
-Example conversation:
-
-> AI: "Please confirm that you are checking in for today's shift."
+> AI: “Please confirm that you are checking in for today’s shift.”
 >
-> Employee: "Yes, I have reached the site."
+> Employee: “Yes, I have reached the site.”
 >
-> System: "Your attendance has been recorded at 08:53 AM."
+> System: “Your attendance has been recorded.”
 
----
+### 5.2 Physical Terminal Check-In
 
-## 6. Location Verification Without Smartphone GPS
-
-Location is one of the main challenges because smartphone GPS is unavailable.
-
-The design therefore makes the **workplace itself part of the attendance proof**.
-
-### Preferred method — site-attached hardware
-
-Where strong physical-presence assurance is required:
+Where stronger physical-presence assurance is needed, a location can use a site-installed RFID or biometric terminal:
 
 ```text
 Employee
    ↓
 RFID / biometric terminal at Site 42
    ↓
-Site gateway
+Site gateway / local controller
    ↓
-Central attendance system
+Central attendance service
 ```
 
-Because the terminal is physically installed at Site 42, the attendance event is inherently associated with that site.
+The terminal is bound to the site in the system configuration, so the event carries both employee and site context.
+
+---
+
+## 6. Location Verification Without Smartphone GPS
+
+Because smartphone GPS is unavailable, the system uses **site identity rather than device GPS** as the location signal.
+
+### Preferred method — site-attached hardware
+
+For higher-assurance locations:
+
+```text
+Employee → RFID / biometric terminal → Site gateway → Backend
+```
+
+The physical terminal is registered to a specific location.
 
 ### Lower-cost method — site-specific telephony
 
-For locations where hardware is not practical:
+For sites where dedicated hardware is not practical:
 
 ```text
 Employee phone
@@ -202,45 +210,43 @@ The backend combines:
 
 - registered caller identity,
 - destination/site identity,
-- time,
+- timestamp,
 - employee-to-site assignment,
-- additional verification such as PIN.
-
-This avoids requiring smartphone GPS.
+- additional verification such as a PIN.
 
 ### Important trade-off
 
-A phone call by itself is **not absolute proof of physical presence** because a call can technically be placed from another location. Therefore, high-security locations should use site-installed RFID/biometric hardware, while telephony can be used as a lower-cost mechanism or fallback.
+A phone call alone is **not absolute proof of physical presence**, because a call can technically be placed from elsewhere. Therefore, high-assurance environments should use site-installed attendance hardware, while telephony is a lower-cost or fallback option.
 
 ---
 
-## 7. Identity Verification & Proxy Attendance
+## 7. Identity Verification and Proxy Attendance
 
-A basic phone number identifies a device, not necessarily the human holding it. The design therefore uses layered verification.
+A phone number identifies a device, not necessarily the human using it. The design therefore supports layered verification.
 
 ### Layer 1 — Registered phone number
 
-The caller number is mapped to an employee record.
+Map the caller number to an employee record.
 
 ### Layer 2 — Personal PIN
 
-The system can request a PIN during the attendance interaction.
+Request a personal attendance PIN when stronger verification is required.
 
 ### Layer 3 — Optional voice verification
 
-For high-security environments, a short voice sample can be compared with a registered voice profile, subject to the organization's privacy and biometric-data policies.
+For high-security environments, voice verification may be added subject to applicable privacy and biometric-data policies.
 
 ### Layer 4 — Physical terminal verification
 
-RFID or biometric terminals can be used where stronger on-site identity assurance is needed.
+RFID or biometric terminals can provide stronger on-site identity assurance.
 
-The architecture supports different security levels by location rather than forcing the same mechanism everywhere.
+The organization can choose the required assurance level by site rather than forcing the same mechanism everywhere.
 
 ---
 
 ## 8. Why Use an LLM?
 
-The LLM is an **intelligence layer**, not the source of truth for attendance.
+The LLM is an **intelligence layer**, not the authoritative attendance system.
 
 ### Good uses for the LLM
 
@@ -251,15 +257,11 @@ The LLM is an **intelligence layer**, not the source of truth for attendance.
 - Human-readable explanations and summaries.
 - HR natural-language queries.
 
-Example:
+Example employee response:
 
-Employee says:
+> “I am at the warehouse, but I will be about 15 minutes late because my bus was delayed.”
 
-> "I'm at the warehouse, but I'll be about 15 minutes late because my bus was delayed."
-
-Voice AI converts speech to text.
-
-The LLM converts it into structured intent:
+Voice AI converts the speech to text, and the LLM can extract:
 
 ```json
 {
@@ -268,7 +270,7 @@ The LLM converts it into structured intent:
 }
 ```
 
-The deterministic rules engine then evaluates company policy and updates the attendance state.
+The deterministic rules engine then checks the employee's shift and company policy before updating attendance.
 
 ### What the LLM should not decide
 
@@ -280,7 +282,7 @@ Those decisions belong to deterministic services and explicit business rules.
 
 ## 9. Attendance State Machine
 
-Attendance is represented as an explicit state transition model.
+Attendance is represented as explicit state transitions so the system is auditable.
 
 ```text
                 ┌──────────────┐
@@ -308,37 +310,32 @@ PENDING ── approved leave ──► EXCUSED
 PRESENT / PENDING ── suspicious event ──► UNDER_REVIEW
 ```
 
-This makes the system auditable and easier to integrate with payroll and HR workflows.
-
 ---
 
 ## 10. Daily Automation Workflow
 
-The system should run automatically every working day.
+The system runs automatically every working day.
 
 ```text
-08:30
 Attendance window opens
         │
         ▼
-Employees check in
+Employee check-in events
 Voice / SMS / USSD / Hardware
         │
         ▼
-Events enter processing queue
+Events enter queue
         │
         ▼
 Identity + site + shift validation
         │
         ▼
-09:15
-Normal check-in cutoff
+Normal cutoff reached
         │
         ▼
-Find missing employees
+Find employees without valid check-in
         │
         ▼
-09:20
 Automated follow-up
         │
         ▼
@@ -348,11 +345,11 @@ Voice / SMS exception handling
 HR dashboard updated
 ```
 
-Times are configurable per location and shift.
+Attendance windows and cutoffs are configurable by location and shift.
 
 ---
 
-## 11. Missing Attendance & AI Follow-Up
+## 11. Missing Attendance and AI Follow-Up
 
 At the cutoff time, the system compares the expected roster with verified attendance events.
 
@@ -368,22 +365,13 @@ The 80 missing employees enter a follow-up queue.
 
 Voice AI can ask:
 
-> "We haven't received your attendance for today. Are you present, late, on leave, or facing an issue?"
+> “We haven't received your attendance for today. Are you present, late, on leave, or facing an issue?”
 
-The employee can respond naturally.
+Example response:
 
-Example:
+> “I am on my way. I'll reach in 20 minutes.”
 
-> "I'm on my way. I'll reach in 20 minutes."
-
-The LLM extracts:
-
-```text
-Intent: LATE_ARRIVAL
-ETA: 20 minutes
-```
-
-The attendance rules engine then applies the company's policy.
+The LLM extracts the intent and ETA, and the rules engine decides the resulting attendance state according to company policy.
 
 ---
 
@@ -401,9 +389,7 @@ SMS / USSD for low-bandwidth situations or when voice interaction fails.
 
 ### Operational fallback
 
-A site supervisor can use a landline or designated workflow to report exceptions, such as approved leave or equipment failure.
-
-This creates redundancy without requiring smartphones.
+A site supervisor can use a landline or designated workflow to report exceptions such as approved leave or equipment failure.
 
 ---
 
@@ -413,23 +399,23 @@ The system should assume failures will occur.
 
 ### Telephony failure
 
-Retry through the provider or fallback channel.
+Retry through the provider or use a fallback communication channel.
 
 ### Employee does not answer
 
-Move the record to `PENDING` and trigger follow-up.
+Move the record to `PENDING` and trigger follow-up according to policy.
 
 ### Network interruption
 
-Queue the event and process it when connectivity returns where the local hardware supports offline buffering.
+Queue events and process them when connectivity returns where local hardware supports offline buffering.
 
-### Duplicate attendance event
+### Duplicate event
 
-Use an idempotency key such as employee + date + event source ID to prevent duplicate records.
+Use an idempotency key, such as employee + date + event source ID, to prevent duplicate attendance records.
 
 ### Provider outage
 
-Keep a durable queue and support a secondary communication provider where business requirements justify it.
+Keep a durable queue and support a secondary provider where business requirements justify it.
 
 ### Hardware failure
 
@@ -439,18 +425,18 @@ Fall back to site telephony or supervisor-assisted exception handling.
 
 ## 14. Scale for 1,000 Employees / 100 Locations
 
-The system should be asynchronous.
+Attendance processing should be asynchronous.
 
-Instead of processing 1,000 calls sequentially:
+Instead of processing 1,000 operations sequentially:
 
 ```text
 Daily Attendance Campaign
           │
           ▼
-     1,000 events/jobs
+     Jobs / Events
           │
           ▼
-       Queue
+        Queue
           │
    ┌──────┼──────┐
    ▼      ▼      ▼
@@ -461,15 +447,15 @@ Worker  Worker  Worker
 Telephony / SMS / Site Hardware
 ```
 
-This allows concurrency limits, retries and rate control.
+The queue provides concurrency control, retries and rate limiting.
 
-At the initial scale, a small set of API instances, a relational database, Redis and worker processes are sufficient. If the organization grows substantially, API workers and queue consumers can be scaled horizontally.
+At the initial scale, a small API fleet, relational database, queue and worker pool are sufficient. If the organization grows, API instances and queue consumers can be scaled horizontally.
 
 ---
 
 ## 15. HR Dashboard
 
-The employee interaction is intentionally simple. The complexity is centralized for HR.
+The employee interaction remains intentionally simple. The complexity is centralized for HR.
 
 Example:
 
@@ -506,15 +492,15 @@ HR can drill down from:
 
 ## 16. LLM-Powered HR Assistant
 
-The same AI layer can help HR investigate attendance data using natural language.
+The AI layer can also help HR investigate attendance data using natural language.
 
 Example questions:
 
-> "Which locations have unusually high absenteeism today?"
+> “Which locations have unusually high absenteeism today?”
 
-> "Who has not checked in after the second reminder?"
+> “Who has not checked in after the second reminder?”
 
-> "Show me today's late arrivals at Site 42."
+> “Show me today's late arrivals at Site 42.”
 
 Architecture:
 
@@ -532,22 +518,22 @@ Structured result
 LLM explanation
 ```
 
-The LLM should not have unrestricted access to production SQL or sensitive data. Queries should pass through an approved data-access layer.
+The LLM should not have unrestricted access to production SQL or sensitive data. Requests should pass through an approved data-access layer.
 
 ---
 
-## 17. Security & Privacy
+## 17. Security and Privacy
 
 Because attendance data is employee data, the platform should include:
 
-- TLS for all network communication.
+- TLS for network communication.
 - Authentication and role-based access control.
 - Hashed attendance PINs.
-- Secret management for API credentials.
+- Secure secret management.
 - Audit logs for administrative changes.
-- Idempotency and replay protection for inbound events/webhooks.
+- Idempotency and replay protection for inbound events/webhooks where applicable.
 - Data minimization and retention policies.
-- Additional privacy controls for any voice biometric data.
+- Additional privacy controls for voice biometric data, if enabled.
 
 Example roles:
 
@@ -559,7 +545,7 @@ EMPLOYEE
 SYSTEM
 ```
 
-A location manager should only see the employees and events relevant to their location.
+A location manager should only see employees and events relevant to their authorized location.
 
 ---
 
@@ -573,30 +559,23 @@ A location manager should only see the employees and events relevant to their lo
 
 **08:53** — Raj uses the configured attendance mechanism.
 
-**08:53** — The system receives:
-
-```text
-Employee identity → Raj
-Location → Site 42
-Time → 08:53
-Source → Voice / RFID / biometric
-```
+**08:53** — The system receives an event containing employee identity, site context, timestamp and source.
 
 **08:53** — Identity and shift rules are validated.
 
 **08:53** — Attendance becomes `PRESENT`.
 
-**09:15** — System identifies employees without valid check-ins.
+**09:15** — The system identifies employees without valid check-ins.
 
 **09:20** — AI follows up with missing employees.
 
 **09:23** — One employee explains in natural language that they are delayed.
 
-**09:23** — LLM extracts `LATE_ARRIVAL`.
+**09:23** — LLM extracts `LATE_ARRIVAL` and the reported ETA.
 
-**09:24** — Rules engine applies the attendance policy.
+**09:24** — The rules engine applies the configured attendance policy.
 
-**09:30** — HR dashboard shows the updated organization-wide status.
+**09:30** — HR sees the updated organization-wide status.
 
 ---
 
@@ -604,36 +583,35 @@ Source → Voice / RFID / biometric
 
 ### Telephony vs. hardware
 
-Telephony is cheaper and easier to deploy but provides weaker physical-presence assurance. RFID/biometric hardware provides stronger physical presence but has deployment and maintenance costs.
+Telephony is easier to deploy and works with basic phones, but it provides weaker physical-presence assurance. RFID/biometric hardware provides stronger on-site verification but introduces hardware deployment and maintenance costs.
 
 ### LLM vs. deterministic rules
 
-LLMs make the interaction flexible and multilingual, but deterministic rules are more reliable for policy enforcement and auditability.
+LLMs make interaction flexible and multilingual, but deterministic rules are more predictable for attendance policy enforcement and auditability.
 
 ### Single channel vs. multi-channel
 
-A single channel is simpler, but multiple channels provide resilience when employees have connectivity or device problems.
+A single channel is simpler, but multiple channels improve resilience when employees have device or connectivity problems.
 
 ### Centralized vs. site autonomy
 
-A centralized platform gives HR one source of truth, while lightweight site-level buffering can improve resilience during temporary network failures.
+A centralized platform gives HR one source of truth, while optional site-level buffering improves resilience during temporary network failures.
 
 ---
 
 ## 20. Why This Solves the Challenge
 
-The design directly addresses the constraints in the problem statement:
+The design directly addresses the challenge:
 
-- **No smartphones:** employees can use basic phones or site equipment.
+- **No smartphones:** employees use feature phones and/or site equipment.
 - **No apps:** the employee interaction is telecom- or hardware-based.
-- **No smartphone GPS:** location is associated with site infrastructure instead of an app GPS signal.
-- **LLMs exist:** they are used for natural-language understanding, multilingual interaction, exception handling and HR analytics.
-- **1,000 employees:** daily processing is automated through scheduling and queues.
-- **100 locations:** each site has its own employees, shifts and attendance mechanisms while HR sees one centralized platform.
-- **HR needs reliable records:** deterministic validation, state transitions, audit logs and exception handling maintain the authoritative attendance record.
+- **LLMs available:** LLMs provide natural-language understanding, multilingual interaction and HR intelligence.
+- **1,000 employees:** queue-based automation processes attendance at scale without manual HR calling.
+- **100 locations:** employee, site and shift are first-class entities in the attendance system.
+- **Daily operation:** scheduled attendance windows and automated follow-up run every working day.
+- **Reliability:** multiple channels, retries, idempotency and exception handling prevent a single failure from stopping the process.
+- **Auditability:** authoritative attendance decisions are made by deterministic services and stored with event history.
 
-### Final Principle
+### Final architectural principle
 
-> **Use the simplest available technology at the employee side, and put the intelligence and operational complexity in the centralized platform.**
-
-The employee does not need a smartphone or an app. The system still gives HR a scalable, auditable and intelligent attendance platform for 1,000 employees across 100 locations.
+> **Use telecom and site infrastructure to replace the smartphone/app interface, use Voice AI and LLMs to understand people naturally, and use deterministic systems to maintain trustworthy attendance records.**
