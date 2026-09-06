@@ -12,12 +12,16 @@ def get_normalized_database_url(raw_url: str) -> str:
     """
     Normalizes PostgreSQL and SQLite URLs for serverless & cloud deployment.
     - Handles Neon / Supabase / Postgres URLs
+    - Strips whitespace, hidden tabs, and newlines from env copy-paste
     - If running on Vercel with SQLite, routes to writable /tmp
     """
     is_serverless = bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
     
     if not raw_url:
         return "sqlite:////tmp/hiring_assistant.db" if is_serverless else "sqlite:///./hiring_assistant.db"
+
+    # Aggressively strip whitespace, tabs, quotes, and newlines
+    raw_url = raw_url.strip().strip('"').strip("'").replace("\t", "").replace("\r", "").replace("\n", "")
 
     # If running on serverless Vercel and using relative SQLite, redirect to writable /tmp
     if is_serverless and "sqlite" in raw_url and "/tmp" not in raw_url:
@@ -27,7 +31,12 @@ def get_normalized_database_url(raw_url: str) -> str:
     if raw_url.startswith("postgres://"):
         raw_url = raw_url.replace("postgres://", "postgresql://", 1)
 
-    return raw_url
+    # Clean any malformed sslmode parameter values (e.g. require\t or spaces)
+    if "sslmode=" in raw_url:
+        import re
+        raw_url = re.sub(r'sslmode=([a-zA-Z0-9_-]+)[^\w&]*', r'sslmode=\1', raw_url)
+
+    return raw_url.strip()
 
 
 db_url = get_normalized_database_url(settings.DATABASE_URL)
